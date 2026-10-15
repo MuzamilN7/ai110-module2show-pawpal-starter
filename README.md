@@ -46,6 +46,14 @@ pip install -r requirements.txt
 
 Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
 
+#Today's Schedule for Muzamil
+========================================
+07:30 AM  |  Buddy (Dog): Morning walk
+08:00 AM  |  Whiskers (Cat): Breakfast feeding
+06:00 PM  |  Buddy (Dog): Evening walk
+07:30 PM  |  Whiskers (Cat): Brush fur
+========================================
+
 ```
 # e.g.:
 # Daily plan for Biscuit (Golden Retriever):
@@ -92,3 +100,26 @@ Describe your app in numbered steps so a reader can follow along without watchin
 5. <!-- Add more steps as needed -->
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+
+
+## Implementation Summary
+
+PawPal is a pet care app that tracks activities for multiple pets and builds a daily schedule. The logic is in `pawpal_system.py`, `main.py` runs a demo, and `diagrams/uml.mmd` holds the class diagram.
+
+### How the classes work together
+
+- **Owner** has one or more pets. `get_all_tasks()` gathers every pet's tasks into one list.
+- **Pet** holds its own `Task` list and its `Medication` list.
+- **Task** is a single activity, such as a walk or feeding, with a time, frequency (once, daily or weekly) and completion status. It can carry a **TaskProgress**, which tracks progress toward a goal, for example `20% complete, 1/5 miles`.
+- **Scheduler** is the "brain". It reads tasks through `Owner.get_all_tasks()`, so it covers all pets. It can:
+  - sort tasks by time
+  - list the pending tasks
+  - work out reminder times
+  - complete a task and add the next occurrence if it repeats
+  - flag tasks scheduled for the same time
+- **MedicationSearch** looks up a **Medication** in a catalog by name or by the illness it treats.
+
+### Running it
+
+- `python main.py` prints "Today's Schedule" for an owner with two pets.
+- `python -m pytest tests` runs the tests.

@@ -4,13 +4,22 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+-One of the actions that should be able to be preformed is to see the status of a task, for example you need to walk 5 miles, the project should be able to show "20% complete, 1/5 miles" or something along those lines
+
+the atrributes would be the task progress, type of task
+the method would be calculation the percent of  amount given compared to the amount needed
+
+another one is able to schedule a activity like walking, feeding, or general care so you dont forget about it
+The atrrubutes needed would be the activity itself
+The method would be to set a reminder depending on how often you need it
+The last action i would want to add is a pet medication searcn or someway to check your pets medictions 
+
+The attributes would either be the name of the medication or the type of ilness that pet has
+The method would be the name of the medication and the description of it
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+-no
 
 ---
 
@@ -32,13 +41,11 @@
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+- I used them to make the skelton of my classes and then acually make them and refine them as needed
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+-I made sure it didnt make the code hard to read and rejcted the complicated code, i verifiyed if it worked the same by rerunning the files
 
 ---
 

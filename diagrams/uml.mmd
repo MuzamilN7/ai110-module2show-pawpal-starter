@@ -1,15 +1,64 @@
 classDiagram
-    %% Replace the placeholders below with your actual classes, attributes, methods, and relationships.
-    %% Keep this file updated so it matches your final implementation.
-
-    class ClassName {
-        +type attribute
-        +method() returnType
+    class TaskProgress {
+        +String task_type
+        +float amount_needed
+        +float amount_completed
+        +String unit
+        +calculate_percent() float
+        +get_status() String
     }
 
-    class AnotherClass {
-        +type attribute
-        +method() returnType
+    class Task {
+        +String description
+        +DateTime time
+        +String frequency
+        +bool completed
+        +TaskProgress progress
+        +mark_complete() Task
     }
 
-    ClassName --> AnotherClass : relationship
+    class Pet {
+        +String name
+        +String species
+        +List~Task~ tasks
+        +List~Medication~ medications
+        +add_task(task) void
+        +remove_task(task) void
+    }
+
+    class Owner {
+        +String name
+        +List~Pet~ pets
+        +add_pet(pet) void
+        +get_all_tasks() List~Task~
+    }
+
+    class Scheduler {
+        +Owner owner
+        +get_tasks() List~Task~
+        +sort_by_time() List~Task~
+        +pending_tasks() List~Task~
+        +set_reminder(task, lead_time) DateTime
+        +due_reminders(now) List~Task~
+        +complete_task(pet, task) void
+        +find_conflicts() List~Task~
+    }
+
+    class Medication {
+        +String name
+        +String description
+        +List~String~ treats
+    }
+
+    class MedicationSearch {
+        +List~Medication~ catalog
+        +search_medication(name, illness) Medication
+        +get_description(medication) String
+    }
+
+    Owner "1" o-- "*" Pet : has
+    Pet "1" o-- "*" Task : has
+    Pet "1" o-- "*" Medication : takes
+    Task --> TaskProgress : tracks
+    Scheduler --> Owner : reads via get_all_tasks
+    MedicationSearch --> Medication : returns
