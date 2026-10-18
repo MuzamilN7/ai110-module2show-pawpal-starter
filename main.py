@@ -23,6 +23,10 @@ def build_owner() -> Owner:
     whiskers.add_task(Task("Breakfast feeding", today_at(8, 0), frequency="daily"))
     whiskers.add_task(Task("Brush fur", today_at(19, 30), frequency="weekly"))
 
+    # Deliberate conflicts to demo detection: one across pets, one on the same pet.
+    buddy.add_task(Task("Give medication", today_at(8, 0)))  # clashes with Whiskers' breakfast
+    buddy.add_task(Task("Grooming", today_at(7, 30)))  # clashes with Buddy's morning walk
+
     return owner
 
 
@@ -41,6 +45,9 @@ def print_schedule(owner: Owner) -> None:
         print(f"{task.time:%I:%M %p}  |  {pet.name} ({pet.species}): {task.description}")
 
     print("=" * 40)
+
+    for warning in scheduler.conflict_warnings():
+        print(warning)
 
 
 if __name__ == "__main__":

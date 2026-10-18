@@ -80,14 +80,43 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_time()`, `Scheduler.pending_tasks()` | Earliest to latest by `Task.time` |
+| Filtering | `Scheduler.filter_tasks()` | By completion status and/or pet name |
+| Conflict handling | `Scheduler.conflict_warnings()`, `Scheduler.find_conflicts()` | Exact same start time, same or different pets |
+| Recurring tasks | `Task.mark_complete()`, `Scheduler.complete_task()` | Daily and weekly, using `timedelta` |
+
+### Sorting
+
+- **`Scheduler.sort_by_time()`** returns every task from all pets, ordered earliest to latest. It calls `sorted()` with `key=lambda t: t.time`. `Task.time` is a `datetime`, so tasks sort correctly across days, not only by time of day.
+- **`Scheduler.pending_tasks()`** is the same ordering with completed tasks removed. The schedule printed by `main.py` uses it.
+
+### Filtering
+
+- **`Scheduler.filter_tasks(completed=None, pet_name=None)`** returns tasks ordered by time.
+  - `completed=True` gives finished tasks, `completed=False` gives pending ones, and `None` skips the check.
+  - `pet_name` matches one pet's tasks, ignoring case. `None` includes every pet.
+  - Both filters can be combined, for example `filter_tasks(completed=False, pet_name="Whiskers")`.
+  - An unknown pet name returns an empty list instead of raising an error.
+
+### Conflict detection
+
+- **`Scheduler.conflict_warnings()`** is a lightweight check that returns warning strings instead of raising errors, so a conflict never crashes the app.
+  - It groups pending tasks by exact start time in a single pass.
+  - Any time slot with two or more tasks produces one message, for example `WARNING: 2 tasks at 08:00 AM (different pets) -> Buddy: Give medication, Whiskers: Breakfast feeding`.
+  - Each message says whether the clash is on the same pet or on different pets.
+  - Completed tasks are ignored.
+- **`Scheduler.find_conflicts()`** returns the conflicting `Task` objects without pet information.
+- **Limitation:** only identical start times count. Tasks that overlap by duration (such as 7:30 and 7:45) are not detected, because tasks have no duration yet.
+
+### Recurring tasks
+
+- **`Task.mark_complete()`** marks a task done. For a `"daily"` or `"weekly"` task it returns a new `Task` for the next occurrence, using `timedelta(days=1)` or `timedelta(weeks=1)`. It returns `None` for `"once"` tasks.
+  - The next time is the scheduled time plus one period, not the completion time, so a routine does not drift later each day.
+  - If a task is badly overdue, whole periods are added until the next time is in the future.
+  - Completing a task twice does not create a duplicate occurrence.
+- **`Scheduler.complete_task(pet, task)`** calls `mark_complete()` and adds the new task to the pet. Use this in the app so the next occurrence lands on the right pet.
 
 ## 📸 Demo Walkthrough
 

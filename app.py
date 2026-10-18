@@ -1,5 +1,7 @@
-import streamlit as st
+from datetime import date, datetime, time
 
+import streamlit as st
+from pawpal_system import Owner, Pet, Scheduler, Task
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
 st.title("🐾 PawPal+")
@@ -38,51 +40,76 @@ At minimum, your system should:
 
 st.divider()
 
-st.subheader("Quick Demo Inputs (UI only)")
-owner_name = st.text_input("Owner name", value="Jordan")
+# Keep one Owner alive across Streamlit reruns.
+if "owner" not in st.session_state:
+    st.session_state.owner = Owner(name="Jordan")
+owner = st.session_state.owner
+
+st.subheader("Owner")
+owner.name = st.text_input("Owner name", value=owner.name)
+
+st.subheader("Add a Pet")
 pet_name = st.text_input("Pet name", value="Mochi")
 species = st.selectbox("Species", ["dog", "cat", "other"])
 
-st.markdown("### Tasks")
-st.caption("Add a few tasks. In your final version, these should feed into your scheduler.")
+if st.button("Add pet"):
+    if any(p.name == pet_name for p in owner.pets):
+        st.warning(f"{pet_name} is already added.")
+    else:
+        owner.add_pet(Pet(name=pet_name, species=species))
+        st.success(f"Added {pet_name} the {species}.")
 
-if "tasks" not in st.session_state:
-    st.session_state.tasks = []
-
-col1, col2, col3 = st.columns(3)
-with col1:
-    task_title = st.text_input("Task title", value="Morning walk")
-with col2:
-    duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=20)
-with col3:
-    priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
-
-if st.button("Add task"):
-    st.session_state.tasks.append(
-        {"title": task_title, "duration_minutes": int(duration), "priority": priority}
-    )
-
-if st.session_state.tasks:
-    st.write("Current tasks:")
-    st.table(st.session_state.tasks)
+if owner.pets:
+    st.write("Your pets:")
+    st.table([{"name": p.name, "species": p.species, "tasks": len(p.tasks)} for p in owner.pets])
 else:
-    st.info("No tasks yet. Add one above.")
+    st.info("No pets yet. Add one above.")
+
+st.markdown("### Schedule a Task")
+
+if owner.pets:
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        task_pet = st.selectbox("Pet", [p.name for p in owner.pets])
+    with col2:
+        task_title = st.text_input("Task", value="Morning walk")
+    with col3:
+        task_time = st.time_input("Time", value=time(7, 30))
+    with col4:
+        frequency = st.selectbox("Frequency", ["once", "daily", "weekly"])
+
+    if st.button("Add task"):
+        pet = next(p for p in owner.pets if p.name == task_pet)
+        pet.add_task(Task(task_title, datetime.combine(date.today(), task_time), frequency))
+        st.success(f"Added '{task_title}' for {pet.name}.")
+else:
+    st.info("Add a pet before scheduling tasks.")
 
 st.divider()
 
-st.subheader("Build Schedule")
-st.caption("This button should call your scheduling logic once you implement it.")
+st.subheader("Today's Schedule")
 
 if st.button("Generate schedule"):
-    st.warning(
-        "Not implemented yet. Next step: create your scheduling logic (classes/functions) and call it here."
-    )
-    st.markdown(
-        """
-Suggested approach:
-1. Design your UML (draft).
-2. Create class stubs (no logic).
-3. Implement scheduling behavior.
-4. Connect your scheduler here and display results.
-"""
-    )
+    scheduler = Scheduler(owner)
+    pet_for_task = {id(t): p for p in owner.pets for t in p.tasks}
+    pending = scheduler.pending_tasks()
+
+    if pending:
+        st.table(
+            [
+                {
+                    "time": f"{t.time:%I:%M %p}",
+                    "pet": pet_for_task[id(t)].name,
+                    "task": t.description,
+                    "frequency": t.frequency,
+                }
+                for t in pending
+            ]
+        )
+    else:
+        st.info("No pending tasks. Add some above.")
+
+    conflicts = scheduler.find_conflicts()
+    if conflicts:
+        st.warning("Some tasks are scheduled at the same time: "
+                   + ", ".join(t.description for t in conflicts))
